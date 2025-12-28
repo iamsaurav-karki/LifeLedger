@@ -934,25 +934,7 @@ kill -9 <PID>
 
 ---
 
-## 🔒 Security Notes
 
-### Production Security Checklist
-
-- [ ] **Change Default Passwords**: Never use default passwords in production
-- [ ] **Strong JWT Secrets**: Use cryptographically strong, random secrets (minimum 32 characters)
-- [ ] **Database Security**: Use strong database passwords and restrict access
-- [ ] **HTTPS**: Always use HTTPS in production (use reverse proxy)
-- [ ] **CORS Configuration**: Configure proper CORS origins
-- [ ] **Environment Variables**: Never commit `.env` files to version control
-- [ ] **Rate Limiting**: Configure appropriate rate limits
-- [ ] **Input Validation**: All inputs are validated, but review for your use case
-- [ ] **SQL Injection**: Using TypeORM parameterized queries (protected)
-- [ ] **XSS Protection**: Frontend uses React (XSS protected by default)
-- [ ] **CSRF Protection**: Consider adding CSRF tokens for additional security
-- [ ] **Regular Updates**: Keep dependencies updated
-- [ ] **Backup Strategy**: Implement regular database backups
-- [ ] **Monitoring**: Set up logging and monitoring
-- [ ] **Access Control**: Review user roles and permissions
 
 ### Generating Strong Secrets
 
@@ -964,16 +946,6 @@ openssl rand -base64 32
 openssl rand -base64 24
 ```
 
-### Best Practices
-
-1. **Never commit secrets** to version control
-2. **Use environment variables** for all sensitive data
-3. **Rotate secrets** periodically
-4. **Use HTTPS** in production
-5. **Implement rate limiting** to prevent abuse
-6. **Regular security audits** of dependencies
-7. **Monitor logs** for suspicious activity
-8. **Keep dependencies updated** with security patches
 
 ---
 
