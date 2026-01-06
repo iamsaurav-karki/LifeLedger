@@ -139,7 +139,7 @@ JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
 
 # Application Configuration
 NODE_ENV=production
-FRONTEND_URL=http://localhost:3001
+FRONTEND_URL=http://localhost:5000
 
 # Admin User Configuration (Required for automatic admin creation)
 ADMIN_EMAIL=admin@example.com
@@ -212,10 +212,10 @@ You should see: `✅ Admin user created successfully: admin@example.com`
 
 ### Step 6: Access the Application
 
-- **Frontend**: http://localhost:3001
-- **Backend API**: http://localhost:3000
-- **API Documentation (Swagger)**: http://localhost:3000/api/docs
-- **Health Check**: http://localhost:3000/health
+- **Frontend**: http://localhost:5000
+- **Backend API**: http://localhost:5001
+- **API Documentation (Swagger)**: http://localhost:5001/api/docs
+- **Health Check**: http://localhost:5001/health
 
 ---
 
@@ -237,18 +237,18 @@ cp ../env.example .env
 npm run start:dev
 ```
 
-Backend will run on `http://localhost:3000`
+Backend will run on `http://localhost:5001`
 
 ### Frontend Setup
 
 ```bash
 cd frontend
 npm install
-# Create .env.local with NEXT_PUBLIC_API_URL=http://localhost:3000
+# Create .env.local with NEXT_PUBLIC_API_URL=http://localhost:5001
 npm run dev
 ```
 
-Frontend will run on `http://localhost:3001`
+Frontend will run on `http://localhost:5000`
 
 ### Database Setup (Local)
 
@@ -313,7 +313,7 @@ JWT_REFRESH_SECRET=GENERATE_STRONG_RANDOM_SECRET_HERE
 JWT_REFRESH_EXPIRES_IN=7d
 
 # Application Configuration
-PORT=3000
+PORT=5001
 NODE_ENV=production
 FRONTEND_URL=https://your-domain.com
 
@@ -356,7 +356,7 @@ server {
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://localhost:3001;
+        proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -365,7 +365,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:5001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -498,7 +498,7 @@ Use the credentials from your `.env` file:
 - **Email**: Value from `ADMIN_EMAIL`
 - **Password**: Value from `ADMIN_PASSWORD`
 
-Go to: http://localhost:3001/login and click "Admin Login"
+Go to: http://localhost:5000/login and click "Admin Login"
 
 #### How Automatic Creation Works
 
@@ -540,7 +540,7 @@ The new admin user can immediately log in with the credentials you provided.
 #### Method 2: API Endpoint (For Automation)
 
 ```bash
-curl -X POST http://localhost:3000/admin/users \
+curl -X POST http://localhost:5001/admin/users \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN" \
   -d '{
@@ -556,7 +556,7 @@ curl -X POST http://localhost:3000/admin/users \
 
 1. Register a user via frontend or API:
 ```bash
-curl -X POST http://localhost:3000/auth/register \
+curl -X POST http://localhost:5001/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "New Admin",
@@ -602,7 +602,7 @@ The password will be automatically updated on startup.
 #### Method 3: API Endpoint
 
 ```bash
-curl -X POST http://localhost:3000/admin/users/USER_ID/reset-password \
+curl -X POST http://localhost:5001/admin/users/USER_ID/reset-password \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN" \
   -d '{
@@ -734,7 +734,7 @@ LifeLedger/
 
 Once the backend is running, access the interactive API documentation:
 
-- **Swagger UI**: http://localhost:3000/api/docs
+- **Swagger UI**: http://localhost:5001/api/docs
 
 The Swagger UI provides:
 - Complete API endpoint documentation
@@ -774,9 +774,9 @@ Tokens are automatically managed via HTTP-only cookies in the frontend.
 |----------|-------------|---------|
 | `REDIS_HOST` | Redis host | `redis` |
 | `REDIS_PORT` | Redis port | `6379` |
-| `PORT` | Backend port | `3000` |
+| `PORT` | Backend port | `5001` |
 | `NODE_ENV` | Environment | `development` |
-| `FRONTEND_URL` | Frontend URL | `http://localhost:3001` |
+| `FRONTEND_URL` | Frontend URL | `http://localhost:5000` |
 | `JWT_EXPIRES_IN` | JWT expiration | `15m` |
 | `JWT_REFRESH_EXPIRES_IN` | Refresh expiration | `7d` |
 | `THROTTLE_TTL` | Rate limit window | `60` |
@@ -885,7 +885,7 @@ cat .env | grep DB_
 
 ```bash
 # Check backend is running
-curl http://localhost:3000/health
+curl http://localhost:5001/health
 
 # Verify frontend environment
 docker exec -it lifeledger-frontend env | grep NEXT_PUBLIC_API_URL
@@ -922,8 +922,8 @@ docker-compose logs frontend | grep -i error
 
 ```bash
 # Find process using port
-lsof -i :3000
-lsof -i :3001
+lsof -i :5001
+lsof -i :5000
 lsof -i :5432
 
 # Kill process (replace PID with actual process ID)

@@ -436,7 +436,7 @@ export default function AdminUsersPage() {
                           <select
                             value={editData.status}
                             onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                            className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+                            className="px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
                           >
                             <option value="ACTIVE">ACTIVE</option>
                             <option value="INACTIVE">INACTIVE</option>
@@ -446,7 +446,7 @@ export default function AdminUsersPage() {
                           <select
                             value={user.status}
                             onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                            className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+                            className="px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
                           >
                             <option value="ACTIVE">Active</option>
                             <option value="INACTIVE">Inactive</option>
