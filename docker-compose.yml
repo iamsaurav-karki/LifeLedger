@@ -52,7 +52,7 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
-      PORT: ${PORT:-5001}
+      PORT: ${PORT:-7001}
       NODE_ENV: ${NODE_ENV:-production}
       FRONTEND_URL: ${FRONTEND_URL}
       THROTTLE_TTL: ${THROTTLE_TTL:-60}
@@ -61,7 +61,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_NAME: ${ADMIN_NAME:-Admin User}
     ports:
-      - "${BACKEND_PORT:-5001}:${PORT:-5001}"
+      - "${BACKEND_PORT:-7001}:${PORT:-7001}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,9 +75,9 @@ services:
     image: ${FRONTEND_IMAGE:-lifeledger-frontend:latest}
     container_name: ${FRONTEND_CONTAINER_NAME:-lifeledger-frontend}
     environment:
-      NEXT_PUBLIC_API_URL: ${FRONTEND_URL:-http://localhost:5001}
+      NEXT_PUBLIC_API_URL: ${FRONTEND_URL:-http://localhost:7001}
     ports:
-      - "${FRONTEND_PORT:-5000}:5000"
+      - "${FRONTEND_PORT:-7000}:7000"
     depends_on:
       - backend
     restart: unless-stopped
