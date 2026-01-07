@@ -1,6 +1,6 @@
 # 🧾 LifeLedger
 
-**Production-Ready Personal Finance & Food Tracking System**
+**Personal Finance & Food Tracking System**
 
 A comprehensive full-stack application for tracking personal finances, investments, lending/borrowing, and food consumption with detailed analytics and admin management.
 
