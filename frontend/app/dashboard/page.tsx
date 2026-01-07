@@ -210,26 +210,20 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      <div className="px-4 py-6 sm:px-0">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        </div>
-
+      <div>
         {/* Financial Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <span className="text-3xl">💰</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Income</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {formatCurrency(analytics?.totalIncome || 0)}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Total Income</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {formatCurrency(analytics?.totalIncome || 0)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -241,13 +235,11 @@ export default function DashboardPage() {
                 <div className="flex-shrink-0">
                   <span className="text-3xl">💸</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Expenses</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {formatCurrency(analytics?.totalExpenses || 0)}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Total Expenses</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {formatCurrency(analytics?.totalExpenses || 0)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -259,13 +251,11 @@ export default function DashboardPage() {
                 <div className="flex-shrink-0">
                   <span className="text-3xl">📈</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Savings</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {formatCurrency(analytics?.savings || 0)}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Savings</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {formatCurrency(analytics?.savings || 0)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -277,13 +267,11 @@ export default function DashboardPage() {
                 <div className="flex-shrink-0">
                   <span className="text-3xl">💼</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Investments</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {formatCurrency(totalInvestments)}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Total Investments</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {formatCurrency(totalInvestments)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -291,20 +279,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Additional Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <span className="text-3xl">📊</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Investment Value</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {formatCurrency(totalInvestmentValue)}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Investment Value</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {formatCurrency(totalInvestmentValue)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -316,13 +302,11 @@ export default function DashboardPage() {
                 <div className="flex-shrink-0">
                   <span className="text-3xl">📤</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Money to Receive</dt>
-                    <dd className="text-lg font-medium text-green-600">
-                      {formatCurrency(lendings.filter(l => l.type === 'lend').reduce((sum, l) => sum + parseFloat(l.amount || 0) - parseFloat(l.paidAmount || 0), 0))}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Money to Receive</p>
+                  <p className="text-lg font-semibold text-green-600">
+                    {formatCurrency(lendings.filter(l => l.type === 'lend').reduce((sum, l) => sum + parseFloat(l.amount || 0) - parseFloat(l.paidAmount || 0), 0))}
+                  </p>
                 </div>
               </div>
             </div>
@@ -334,13 +318,11 @@ export default function DashboardPage() {
                 <div className="flex-shrink-0">
                   <span className="text-3xl">📥</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Money to Pay</dt>
-                    <dd className="text-lg font-medium text-red-600">
-                      {formatCurrency(lendings.filter(l => l.type === 'borrow').reduce((sum, l) => sum + parseFloat(l.amount || 0) - parseFloat(l.paidAmount || 0), 0))}
-                    </dd>
-                  </dl>
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">Money to Pay</p>
+                  <p className="text-lg font-semibold text-red-600">
+                    {formatCurrency(lendings.filter(l => l.type === 'borrow').reduce((sum, l) => sum + parseFloat(l.amount || 0) - parseFloat(l.paidAmount || 0), 0))}
+                  </p>
                 </div>
               </div>
             </div>
@@ -350,31 +332,39 @@ export default function DashboardPage() {
         {/* Charts Section */}
         <div className="space-y-6 mb-8">
           {/* Income vs Expenses Comparison */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Income vs Expenses (Last 7 Days)</h2>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={incomeExpenseComparison}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
-                  stroke="#9ca3af"
-                />
-                <YAxis 
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
-                  stroke="#9ca3af"
-                  tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  wrapperStyle={{ paddingTop: '20px' }}
-                  iconType="square"
-                />
-                <Bar dataKey="income" fill="#10b981" name="Income" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Income vs Expenses (Last 7 Days)</h2>
+            <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+              <div className="min-w-[500px]">
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={incomeExpenseComparison}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: '#6b7280', fontSize: 11 }}
+                      stroke="#9ca3af"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tick={{ fill: '#6b7280', fontSize: 11 }}
+                      stroke="#9ca3af"
+                      tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
+                      width={60}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="square"
+                    />
+                    <Bar dataKey="income" fill="#10b981" name="Income" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-sm text-gray-600">Total Income</p>
                 <p className="text-lg font-bold text-green-600">
@@ -403,96 +393,112 @@ export default function DashboardPage() {
           {/* Financial Trends */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Income & Expense Trends */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Income & Expense Trends</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={incomeExpenseComparison}>
-                  <defs>
-                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                    </linearGradient>
-                    <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fill: '#6b7280', fontSize: 11 }}
-                    stroke="#9ca3af"
-                  />
-                  <YAxis 
-                    tick={{ fill: '#6b7280', fontSize: 11 }}
-                    stroke="#9ca3af"
-                    tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend 
-                    wrapperStyle={{ paddingTop: '10px' }}
-                    iconType="square"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="income" 
-                    stroke="#10b981" 
-                    fillOpacity={1} 
-                    fill="url(#colorIncome)" 
-                    name="Income"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="expenses" 
-                    stroke="#ef4444" 
-                    fillOpacity={1} 
-                    fill="url(#colorExpenses)" 
-                    name="Expenses"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Income & Expense Trends</h2>
+              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <div className="min-w-[400px]">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={incomeExpenseComparison}>
+                      <defs>
+                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                        </linearGradient>
+                        <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fill: '#6b7280', fontSize: 10 }}
+                        stroke="#9ca3af"
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis 
+                        tick={{ fill: '#6b7280', fontSize: 10 }}
+                        stroke="#9ca3af"
+                        tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
+                        width={60}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend 
+                        wrapperStyle={{ paddingTop: '10px' }}
+                        iconType="square"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="income" 
+                        stroke="#10b981" 
+                        fillOpacity={1} 
+                        fill="url(#colorIncome)" 
+                        name="Income"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="expenses" 
+                        stroke="#ef4444" 
+                        fillOpacity={1} 
+                        fill="url(#colorExpenses)" 
+                        name="Expenses"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
 
             {/* Investment Performance */}
             {investments.length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Investment Performance</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={investmentData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fill: '#6b7280', fontSize: 11 }}
-                      stroke="#9ca3af"
-                    />
-                    <YAxis 
-                      tick={{ fill: '#6b7280', fontSize: 11 }}
-                      stroke="#9ca3af"
-                      tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '10px' }}
-                      iconType="line"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="invested" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2}
-                      dot={{ fill: '#3b82f6', r: 4 }}
-                      name="Amount Invested"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#10b981" 
-                      strokeWidth={2}
-                      dot={{ fill: '#10b981', r: 4 }}
-                      name="Current Value"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Investment Performance</h2>
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="min-w-[400px]">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={investmentData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{ fill: '#6b7280', fontSize: 10 }}
+                          stroke="#9ca3af"
+                          angle={-45}
+                          textAnchor="end"
+                          height={60}
+                        />
+                        <YAxis 
+                          tick={{ fill: '#6b7280', fontSize: 10 }}
+                          stroke="#9ca3af"
+                          tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
+                          width={60}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend 
+                          wrapperStyle={{ paddingTop: '10px' }}
+                          iconType="line"
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="invested" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          dot={{ fill: '#3b82f6', r: 4 }}
+                          name="Amount Invested"
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="#10b981" 
+                          strokeWidth={2}
+                          dot={{ fill: '#10b981', r: 4 }}
+                          name="Current Value"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -501,87 +507,101 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Expense Categories */}
             {categoryData.length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Expense by Category</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {categoryData.map((entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => formatCurrency(value)}
-                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="mt-4 space-y-2">
-                  {categoryData.map((item: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+              <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Expense by Category</h2>
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Pie
+                          data={categoryData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius="70%"
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {categoryData.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => formatCurrency(value)}
+                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
                         />
-                        <span className="text-gray-700">{item.fullName}</span>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {categoryData.map((item: any, index: number) => {
+                    const percent = ((item.value / categoryData.reduce((sum: number, d: any) => sum + d.value, 0)) * 100).toFixed(0);
+                    return (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center min-w-0 flex-1">
+                          <div 
+                            className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                            style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                          />
+                          <span className="text-gray-700 truncate">{item.fullName}</span>
+                          <span className="text-gray-500 ml-2 flex-shrink-0">({percent}%)</span>
+                        </div>
+                        <span className="font-semibold text-gray-900 ml-2 flex-shrink-0">{formatCurrency(item.value)}</span>
                       </div>
-                      <span className="font-semibold text-gray-900">{formatCurrency(item.value)}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Investment Types */}
             {investmentTypeData.length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Investments by Type</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={investmentTypeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {investmentTypeData.map((entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => formatCurrency(value)}
-                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="mt-4 space-y-2">
-                  {investmentTypeData.map((item: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+              <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Investments by Type</h2>
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Pie
+                          data={investmentTypeData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius="70%"
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {investmentTypeData.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => formatCurrency(value)}
+                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
                         />
-                        <span className="text-gray-700">{item.name}</span>
-                        <span className="text-gray-500 ml-2">({item.count})</span>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {investmentTypeData.map((item: any, index: number) => {
+                    const percent = ((item.value / investmentTypeData.reduce((sum: number, d: any) => sum + d.value, 0)) * 100).toFixed(0);
+                    return (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center min-w-0 flex-1">
+                          <div 
+                            className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                            style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                          />
+                          <span className="text-gray-700 truncate">{item.name}</span>
+                          <span className="text-gray-500 ml-2 flex-shrink-0">({item.count})</span>
+                          <span className="text-gray-500 ml-2 flex-shrink-0">{percent}%</span>
+                        </div>
+                        <span className="font-semibold text-gray-900 ml-2 flex-shrink-0">{formatCurrency(item.value)}</span>
                       </div>
-                      <span className="font-semibold text-gray-900">{formatCurrency(item.value)}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

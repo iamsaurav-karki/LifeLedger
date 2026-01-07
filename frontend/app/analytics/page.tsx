@@ -412,10 +412,12 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Comprehensive Financial Overview */}
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-8 border border-gray-200">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">Financial Overview</h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={financialComparison}>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-900">Financial Overview</h2>
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <div className="min-w-[600px]">
+              <ResponsiveContainer width="100%" height={400}>
+                <ComposedChart data={financialComparison}>
               <defs>
                 <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
@@ -478,94 +480,110 @@ export default function AnalyticsPage() {
                 dot={{ fill: '#3b82f6', r: 5 }}
                 name="Net Savings"
               />
-            </ComposedChart>
-          </ResponsiveContainer>
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
         {/* Category Breakdowns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Expense Categories */}
           {categoryData.length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Expenses by Category</h2>
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => formatCurrency(value)}
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-4 space-y-2">
-                {categoryData.map((item: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2" 
-                        style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Expenses by Category</h2>
+              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
+                  <ResponsiveContainer width="100%" height={320}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius="70%"
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => formatCurrency(value)}
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
                       />
-                      <span className="text-gray-700">{item.fullName}</span>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {categoryData.map((item: any, index: number) => {
+                  const percent = ((item.value / categoryData.reduce((sum: number, d: any) => sum + d.value, 0)) * 100).toFixed(0);
+                  return (
+                    <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
+                      <div className="flex items-center min-w-0 flex-1">
+                        <div 
+                          className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                        />
+                        <span className="text-gray-700 truncate">{item.fullName}</span>
+                        <span className="text-gray-500 ml-2 flex-shrink-0">({percent}%)</span>
+                      </div>
+                      <span className="font-semibold text-gray-900 ml-2 flex-shrink-0">{formatCurrency(item.value)}</span>
                     </div>
-                    <span className="font-semibold text-gray-900">{formatCurrency(item.value)}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Income Sources */}
           {sourceData.length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Income by Source</h2>
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={sourceData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {sourceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => formatCurrency(value)}
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-4 space-y-2">
-                {sourceData.map((item: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2" 
-                        style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Income by Source</h2>
+              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
+                  <ResponsiveContainer width="100%" height={320}>
+                    <PieChart>
+                      <Pie
+                        data={sourceData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius="70%"
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {sourceData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => formatCurrency(value)}
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
                       />
-                      <span className="text-gray-700">{item.fullName}</span>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {sourceData.map((item: any, index: number) => {
+                  const percent = ((item.value / sourceData.reduce((sum: number, d: any) => sum + d.value, 0)) * 100).toFixed(0);
+                  return (
+                    <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
+                      <div className="flex items-center min-w-0 flex-1">
+                        <div 
+                          className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                          style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                        />
+                        <span className="text-gray-700 truncate">{item.fullName}</span>
+                        <span className="text-gray-500 ml-2 flex-shrink-0">({percent}%)</span>
+                      </div>
+                      <span className="font-semibold text-gray-900 ml-2 flex-shrink-0">{formatCurrency(item.value)}</span>
                     </div>
-                    <span className="font-semibold text-gray-900">{formatCurrency(item.value)}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -573,16 +591,16 @@ export default function AnalyticsPage() {
 
         {/* Investment Analytics */}
         {investments.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-8 border border-gray-200">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">Investment Analytics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-900">Investment Analytics</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-700 font-medium">Total Invested</p>
-                <p className="text-2xl font-bold text-blue-900">{formatCurrency(totalInvestments)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{formatCurrency(totalInvestments)}</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <p className="text-sm text-green-700 font-medium">Current Value</p>
-                <p className="text-2xl font-bold text-green-900">{formatCurrency(totalInvestmentValue)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{formatCurrency(totalInvestmentValue)}</p>
               </div>
               <div className={`p-4 rounded-lg border ${
                 investmentProfit >= 0 
@@ -592,7 +610,7 @@ export default function AnalyticsPage() {
                 <p className={`text-sm font-medium ${investmentProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                   Profit/Loss
                 </p>
-                <p className={`text-2xl font-bold ${investmentProfit >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+                <p className={`text-xl sm:text-2xl font-bold ${investmentProfit >= 0 ? 'text-green-900' : 'text-red-900'}`}>
                   {formatCurrency(investmentProfit)}
                 </p>
               </div>
@@ -600,28 +618,33 @@ export default function AnalyticsPage() {
             {investmentTypeData.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">Investments by Type</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={investmentTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fill: '#6b7280', fontSize: 11 }}
-                      stroke="#9ca3af"
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#6b7280', fontSize: 11 }}
-                      stroke="#9ca3af"
-                      tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Bar dataKey="invested" fill="#3b82f6" name="Amount Invested" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="value" fill="#10b981" name="Current Value" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="min-w-[500px]">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={investmentTypeData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fill: '#6b7280', fontSize: 10 }}
+                          stroke="#9ca3af"
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          tick={{ fill: '#6b7280', fontSize: 10 }}
+                          stroke="#9ca3af"
+                          tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
+                          width={60}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                        <Bar dataKey="invested" fill="#3b82f6" name="Amount Invested" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" fill="#10b981" name="Current Value" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -652,25 +675,28 @@ export default function AnalyticsPage() {
             {lendingStatusData.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">Lending Status Distribution</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={lendingStatusData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {lendingStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Pie
+                          data={lendingStatusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius="70%"
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {lendingStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ fontSize: '12px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -698,50 +724,61 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-4 text-gray-800">Food Cost by Meal Type</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={mealTypeData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fill: '#6b7280', fontSize: 11 }}
-                        stroke="#9ca3af"
-                      />
-                      <YAxis 
-                        tick={{ fill: '#6b7280', fontSize: 11 }}
-                        stroke="#9ca3af"
-                        tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar dataKey="cost" fill="#f97316" name="Cost" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                    <div className="min-w-[400px]">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={mealTypeData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fill: '#6b7280', fontSize: 10 }}
+                            stroke="#9ca3af"
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                          />
+                          <YAxis 
+                            tick={{ fill: '#6b7280', fontSize: 10 }}
+                            stroke="#9ca3af"
+                            tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
+                            width={60}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                          <Bar dataKey="cost" fill="#f97316" name="Cost" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 </div>
                 {foodCategoryData.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold mb-4 text-gray-800">Food Cost by Category</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={foodCategoryData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {foodCategoryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: number) => formatCurrency(value)}
-                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                      <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
+                        <ResponsiveContainer width="100%" height={280}>
+                          <PieChart>
+                            <Pie
+                              data={foodCategoryData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius="70%"
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {foodCategoryData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              formatter={(value: number) => formatCurrency(value)}
+                              contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

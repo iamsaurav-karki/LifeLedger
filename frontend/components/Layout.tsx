@@ -16,33 +16,24 @@ export default function Layout({ children }: LayoutProps) {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isAdmin = useAuthStore((state) => state.isAdmin());
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navLinks = useMemo(
     () =>
       isAdmin
         ? [
-            { href: '/admin/dashboard', label: 'Dashboard' },
-            { href: '/admin/users', label: 'Users' },
-            { href: '/admin/settings', label: 'Settings' },
+            { href: '/admin/dashboard', label: 'Dashboard', icon: '📊', color: 'from-blue-500 to-cyan-500' },
+            { href: '/admin/users', label: 'Users', icon: '👥', color: 'from-purple-500 to-pink-500' },
+            { href: '/admin/settings', label: 'Settings', icon: '⚙️', color: 'from-gray-500 to-gray-700' },
           ]
         : [
-            { href: '/dashboard', label: 'Dashboard' },
-            { href: '/finance', label: 'Finance' },
-            { href: '/food', label: 'Food' },
-            { href: '/analytics', label: 'Analytics' },
+            { href: '/dashboard', label: 'Dashboard', icon: '📊', color: 'from-blue-500 to-cyan-500' },
+            { href: '/finance', label: 'Finance', icon: '💰', color: 'from-green-500 to-emerald-500' },
+            { href: '/food', label: 'Food', icon: '🍽️', color: 'from-orange-500 to-red-500' },
+            { href: '/analytics', label: 'Analytics', icon: '📈', color: 'from-purple-500 to-indigo-500' },
           ],
     [isAdmin]
   );
-
-  const linkClasses = (href: string) => {
-    const isActive = pathname?.startsWith(href);
-    return `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-      isActive
-        ? 'border-primary-500 text-gray-900'
-        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-    }`;
-  };
 
   const handleLogout = async () => {
     try {
@@ -55,92 +46,151 @@ export default function Layout({ children }: LayoutProps) {
     }
   };
 
-  const handleMobileNavigate = (href: string) => {
-    setIsMobileMenuOpen(false);
+  const handleNavigate = (href: string) => {
+    setSidebarOpen(false);
     router.push(href);
   };
 
+  const isActive = (href: string) => {
+    if (href === '/dashboard' || href === '/admin/dashboard') {
+      return pathname === href || pathname === '/';
+    }
+    return pathname?.startsWith(href);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href={isAdmin ? '/admin/dashboard' : '/dashboard'} className="flex items-center">
-                <h1 className="text-2xl font-bold text-primary-600">🧾 LifeLedger</h1>
-              </Link>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                {navLinks.map((link) => (
-                  <Link key={link.href} href={link.href} className={linkClasses(link.href)}>
-                    {link.label}
-                  </Link>
-                ))}
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+          lg:translate-x-0 lg:static lg:inset-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
+            <Link 
+              href={isAdmin ? '/admin/dashboard' : '/dashboard'} 
+              className="flex items-center space-x-2"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-xl">🧾</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">LifeLedger</span>
+            </Link>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-gray-500 hover:text-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <button
+                  key={link.href}
+                  onClick={() => handleNavigate(link.href)}
+                  className={`
+                    w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                    ${active
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'text-gray-700 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  <span className="text-lg">{link.icon}</span>
+                  <span className="flex-1 text-left">{link.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* User Section */}
+          <div className="p-4 border-t border-gray-200 bg-white">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden text-gray-600 hover:text-gray-900 p-2 rounded-md hover:bg-gray-100"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                  {navLinks.find(link => isActive(link.href))?.label || 'Dashboard'}
+                </h2>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {user?.name && (
-                <span className="hidden sm:inline text-gray-700 mr-1 truncate max-w-[140px]">
-                  {user.name}
-                </span>
-              )}
-              <button
-                onClick={handleLogout}
-                className="bg-primary-600 text-white px-3 py-2 rounded-md hover:bg-primary-700 text-sm"
-              >
-                Logout
-              </button>
-              <button
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                className="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Toggle menu"
-                aria-expanded={isMobileMenuOpen}
-              >
-                <span className="sr-only">Open main menu</span>
-                <svg className={`h-6 w-6 ${isMobileMenuOpen ? 'hidden' : 'block'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                <svg className={`h-6 w-6 ${isMobileMenuOpen ? 'block' : 'hidden'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="sm:hidden border-t border-gray-200">
-            <div className="px-4 pt-2 pb-4 space-y-2">
-              {navLinks.map((link) => (
-                <button
-                  key={link.href}
-                  onClick={() => handleMobileNavigate(link.href)}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    pathname?.startsWith(link.href)
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
-              <div className="border-t border-gray-200 pt-3">
-                {user?.name && (
-                  <p className="px-3 pb-2 text-sm text-gray-500">
-                    Signed in as <span className="font-medium text-gray-700">{user.name}</span>
-                  </p>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 text-base font-medium"
-                >
-                  Logout
-                </button>
+              <div className="hidden sm:flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500">{isAdmin ? 'Admin' : 'User'}</p>
+                </div>
+                <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </nav>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 px-4">{children}</main>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="p-4 sm:p-6 lg:p-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

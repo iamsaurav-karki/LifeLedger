@@ -352,10 +352,10 @@ export default function FoodPage() {
   return (
     <Layout>
       <div className="px-4 py-6 sm:px-0">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Food Tracking</h1>
-            <p className="text-gray-500 mt-1">Track your meals, costs, and nutrition</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Food Tracking</h1>
+            <p className="text-gray-500 mt-1 text-sm sm:text-base">Track your meals, costs, and nutrition</p>
           </div>
           <button
             onClick={() => {
@@ -365,7 +365,7 @@ export default function FoodPage() {
               setSuccess('');
               reset();
             }}
-            className="bg-orange-600 text-white px-6 py-2.5 rounded-lg hover:bg-orange-700 shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+            className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 text-sm font-medium whitespace-nowrap"
           >
             {showForm ? 'Cancel' : '+ Add Food Log'}
           </button>
