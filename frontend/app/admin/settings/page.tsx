@@ -315,11 +315,11 @@ export default function AdminSettingsPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900">{user.name}</p>
                           <p className="text-sm text-gray-700">{user.email}</p>
-                          <div className="mt-1 flex items-center space-x-4">
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               user.role === 'ADMIN' 
                                 ? 'bg-purple-100 text-purple-800' 
@@ -338,7 +338,7 @@ export default function AdminSettingsPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex flex-wrap gap-2 sm:justify-end">
                           <button
                             onClick={() => handleEditUser(user)}
                             className="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm font-medium"
@@ -384,8 +384,8 @@ export default function AdminSettingsPage() {
               {settings.map((setting: any) => (
                 <li key={setting.key}>
                   <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900">{setting.key}</p>
                         {editingKey === setting.key ? (
                           <div className="mt-2 flex items-center space-x-2">
