@@ -132,19 +132,19 @@ export default function LoginPage() {
 
         <div className="mt-6 pt-6 border-t border-gray-200">
           {!isAdminLogin ? (
-            <p className="text-center text-sm text-gray-600">
-              Don't have an account?{' '}
-              <a href="/register" className="text-primary-600 hover:underline">
-                Register
-              </a>
-            </p>
+              <p className="text-center text-sm text-gray-600">
+                Don't have an account?{' '}
+                <a href="/register" className="text-primary-600 hover:underline">
+                  Register
+                </a>
+              </p>
           ) : (
-            <p className="text-center text-sm text-gray-600">
-              Need an account?{' '}
-              <a href="/register" className="text-purple-600 hover:underline">
-                Register
-              </a>
-            </p>
+              <p className="text-center text-sm text-gray-600">
+                Need an account?{' '}
+                <a href="/register" className="text-purple-600 hover:underline">
+                  Register
+                </a>
+              </p>
           )}
         </div>
       </div>

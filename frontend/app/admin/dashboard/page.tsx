@@ -51,105 +51,98 @@ export default function AdminDashboardPage() {
     );
   }
 
-
   return (
     <Layout>
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">System overview and user analytics</p>
+        </div>
 
         {/* User Statistics KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden shadow rounded-lg border border-blue-200">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">👥</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">👥</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-blue-700 truncate">Total Users</dt>
-                    <dd className="text-2xl font-bold text-blue-900">
-                      {analytics?.users?.total || 0}
-                    </dd>
-                  </dl>
-                </div>
+                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Users</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {analytics?.users?.total || 0}
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow rounded-lg border border-green-200">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">✅</span>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">✅</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-green-700 truncate">Active Users</dt>
-                    <dd className="text-2xl font-bold text-green-900">
-                      {analytics?.users?.active || 0}
-                    </dd>
-                  </dl>
-                </div>
+                <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">Active</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Active Users</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {analytics?.users?.active || 0}
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 overflow-hidden shadow rounded-lg border border-purple-200">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">📊</span>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-purple-700 truncate">Daily Active</dt>
-                    <dd className="text-2xl font-bold text-purple-900">
-                      {analytics?.users?.dailyActiveUsers || 0}
-                    </dd>
-                  </dl>
-                </div>
+                <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">Daily</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Daily Active</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {analytics?.users?.dailyActiveUsers || 0}
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 overflow-hidden shadow rounded-lg border border-yellow-200">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">📈</span>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📈</span>
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-yellow-700 truncate">New Signups</dt>
-                    <dd className="text-2xl font-bold text-yellow-900">
-                      {analytics?.users?.newSignups || 0}
-                    </dd>
-                  </dl>
-                </div>
+                <span className="text-xs font-semibold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">New</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">New Signups</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {analytics?.users?.newSignups || 0}
+              </p>
             </div>
           </div>
         </div>
 
         {/* User Statistics Details */}
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">User Statistics</h2>
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">User Statistics</h2>
+            <p className="text-sm text-gray-500">Detailed user metrics</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-600 font-medium">New Signups</p>
+            <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-200">
+              <p className="text-sm text-blue-600 font-medium mb-1">New Signups</p>
               <p className="text-2xl font-bold text-blue-900">{analytics?.users?.newSignups || 0}</p>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-600 font-medium">Active Rate</p>
+            <div className="text-center p-4 bg-green-50 rounded-xl border border-green-200">
+              <p className="text-sm text-green-600 font-medium mb-1">Active Rate</p>
               <p className="text-2xl font-bold text-green-900">
                 {analytics?.users?.total > 0 
                   ? ((analytics.users.active / analytics.users.total) * 100).toFixed(1) 
                   : '0'}%
               </p>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <p className="text-sm text-purple-600 font-medium">Engagement</p>
+            <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <p className="text-sm text-purple-600 font-medium mb-1">Engagement</p>
               <p className="text-2xl font-bold text-purple-900">
                 {analytics?.users?.dailyActiveUsers || 0} / {analytics?.users?.active || 0}
               </p>

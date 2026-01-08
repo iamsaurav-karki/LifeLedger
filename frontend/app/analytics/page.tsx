@@ -273,8 +273,11 @@ export default function AnalyticsPage() {
   return (
     <Layout>
       <div className="px-4 py-6 sm:px-0">
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+          <p className="text-gray-600">Comprehensive financial insights and trends</p>
+        </div>
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Period:</label>
@@ -293,127 +296,128 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow-lg rounded-lg border border-green-200">
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className="text-sm font-medium text-green-700">Total Income</dt>
-                  <dd className="text-2xl font-bold text-green-900 mt-1">
-                    {formatCurrency(analytics?.totalIncome || 0)}
-                  </dd>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">💰</span>
                 </div>
-                <span className="text-4xl">💰</span>
+                <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">Income</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Income</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(analytics?.totalIncome || 0)}
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-red-50 to-red-100 overflow-hidden shadow-lg rounded-lg border border-red-200">
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className="text-sm font-medium text-red-700">Total Expenses</dt>
-                  <dd className="text-2xl font-bold text-red-900 mt-1">
-                    {formatCurrency(analytics?.totalExpenses || 0)}
-                  </dd>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">💸</span>
                 </div>
-                <span className="text-4xl">💸</span>
+                <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">Expenses</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Expenses</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(analytics?.totalExpenses || 0)}
+              </p>
             </div>
           </div>
 
-          <div className={`bg-gradient-to-br overflow-hidden shadow-lg rounded-lg border ${
-            (analytics?.savings || 0) >= 0 
-              ? 'from-blue-50 to-blue-100 border-blue-200' 
-              : 'from-orange-50 to-orange-100 border-orange-200'
-          }`}>
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className={`text-sm font-medium ${(analytics?.savings || 0) >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
-                    Net Savings
-                  </dt>
-                  <dd className={`text-2xl font-bold mt-1 ${(analytics?.savings || 0) >= 0 ? 'text-blue-900' : 'text-orange-900'}`}>
-                    {formatCurrency(analytics?.savings || 0)}
-                  </dd>
+          <div className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden`}>
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 ${(analytics?.savings || 0) >= 0 ? 'bg-blue-100' : 'bg-orange-100'} rounded-xl flex items-center justify-center`}>
+                  <span className="text-2xl">📈</span>
                 </div>
-                <span className="text-4xl">📈</span>
+                <span className={`text-xs font-semibold ${(analytics?.savings || 0) >= 0 ? 'text-blue-600 bg-blue-50' : 'text-orange-600 bg-orange-50'} px-2 py-1 rounded-full`}>Savings</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Net Savings</p>
+              <p className={`text-2xl font-bold ${(analytics?.savings || 0) >= 0 ? 'text-gray-900' : 'text-orange-600'}`}>
+                {formatCurrency(analytics?.savings || 0)}
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 overflow-hidden shadow-lg rounded-lg border border-purple-200">
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className="text-sm font-medium text-purple-700">Total Investments</dt>
-                  <dd className="text-2xl font-bold text-purple-900 mt-1">
-                    {formatCurrency(totalInvestments)}
-                  </dd>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">💼</span>
                 </div>
-                <span className="text-4xl">💼</span>
+                <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">Invest</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Investments</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(totalInvestments)}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Additional Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 overflow-hidden shadow-lg rounded-lg border border-orange-200">
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className="text-sm font-medium text-orange-700">Food Cost</dt>
-                  <dd className="text-xl font-bold text-orange-900 mt-1">
-                    {formatCurrency(foodAnalytics?.totalCost || 0)}
-                  </dd>
-                  <p className="text-xs text-orange-600 mt-1">
-                    {foodLogs.length} meals logged
-                  </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">🍔</span>
                 </div>
-                <span className="text-3xl">🍔</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Food Cost</p>
+              <p className="text-xl font-bold text-gray-900 mb-2">
+                {formatCurrency(foodAnalytics?.totalCost || 0)}
+              </p>
+              <p className="text-xs text-gray-500">
+                {foodLogs.length} meals logged
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow-lg rounded-lg border border-green-200">
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className="text-sm font-medium text-green-700">Money to Receive</dt>
-                  <dd className="text-xl font-bold text-green-900 mt-1">
-                    {formatCurrency(totalLentPending)}
-                  </dd>
-                  <p className="text-xs text-green-600 mt-1">
-                    {lendings.filter(l => l.type === 'lend').length} records
-                  </p>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📤</span>
                 </div>
-                <span className="text-3xl">📤</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Money to Receive</p>
+              <p className="text-xl font-bold text-green-600 mb-2">
+                {formatCurrency(totalLentPending)}
+              </p>
+              <p className="text-xs text-gray-500">
+                {lendings.filter(l => l.type === 'lend').length} records
+              </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-red-50 to-red-100 overflow-hidden shadow-lg rounded-lg border border-red-200">
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <dt className="text-sm font-medium text-red-700">Money to Pay</dt>
-                  <dd className="text-xl font-bold text-red-900 mt-1">
-                    {formatCurrency(totalBorrowedPending)}
-                  </dd>
-                  <p className="text-xs text-red-600 mt-1">
-                    {lendings.filter(l => l.type === 'borrow').length} records
-                  </p>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📥</span>
                 </div>
-                <span className="text-3xl">📥</span>
               </div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Money to Pay</p>
+              <p className="text-xl font-bold text-red-600 mb-2">
+                {formatCurrency(totalBorrowedPending)}
+              </p>
+              <p className="text-xs text-gray-500">
+                {lendings.filter(l => l.type === 'borrow').length} records
+              </p>
             </div>
           </div>
         </div>
 
         {/* Comprehensive Financial Overview */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-900">Financial Overview</h2>
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 mb-8">
+          <div className="mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Financial Overview</h2>
+            <p className="text-sm text-gray-500">Complete financial breakdown</p>
+          </div>
           <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
             <div className="min-w-[600px]">
               <ResponsiveContainer width="100%" height={400}>
@@ -490,8 +494,11 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Expense Categories */}
           {categoryData.length > 0 && (
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Expenses by Category</h2>
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+              <div className="mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Expenses by Category</h2>
+                <p className="text-sm text-gray-500">Spending breakdown</p>
+              </div>
               <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                 <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
                   <ResponsiveContainer width="100%" height={320}>
@@ -540,8 +547,11 @@ export default function AnalyticsPage() {
 
           {/* Income Sources */}
           {sourceData.length > 0 && (
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Income by Source</h2>
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+              <div className="mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Income by Source</h2>
+                <p className="text-sm text-gray-500">Earnings breakdown</p>
+              </div>
               <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                 <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
                   <ResponsiveContainer width="100%" height={320}>
@@ -591,23 +601,26 @@ export default function AnalyticsPage() {
 
         {/* Investment Analytics */}
         {investments.length > 0 && (
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-900">Investment Analytics</h2>
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 mb-8">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Investment Analytics</h2>
+              <p className="text-sm text-gray-500">Portfolio performance insights</p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-700 font-medium">Total Invested</p>
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                <p className="text-sm text-blue-700 font-medium mb-1">Total Invested</p>
                 <p className="text-xl sm:text-2xl font-bold text-blue-900">{formatCurrency(totalInvestments)}</p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-sm text-green-700 font-medium">Current Value</p>
+              <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                <p className="text-sm text-green-700 font-medium mb-1">Current Value</p>
                 <p className="text-xl sm:text-2xl font-bold text-green-900">{formatCurrency(totalInvestmentValue)}</p>
               </div>
-              <div className={`p-4 rounded-lg border ${
+              <div className={`p-4 rounded-xl border ${
                 investmentProfit >= 0 
                   ? 'bg-green-50 border-green-200' 
                   : 'bg-red-50 border-red-200'
               }`}>
-                <p className={`text-sm font-medium ${investmentProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                <p className={`text-sm font-medium mb-1 ${investmentProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                   Profit/Loss
                 </p>
                 <p className={`text-xl sm:text-2xl font-bold ${investmentProfit >= 0 ? 'text-green-900' : 'text-red-900'}`}>
@@ -617,7 +630,7 @@ export default function AnalyticsPage() {
             </div>
             {investmentTypeData.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Investments by Type</h3>
+                <h3 className="text-lg font-bold mb-4 text-gray-900">Investments by Type</h3>
                 <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                   <div className="min-w-[500px]">
                     <ResponsiveContainer width="100%" height={300}>
@@ -652,10 +665,13 @@ export default function AnalyticsPage() {
 
         {/* Lending & Borrowing Analytics */}
         {lendings.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-8 border border-gray-200">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">Lending & Borrowing Analytics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 mb-8">
+            <div className="mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Lending & Borrowing Analytics</h2>
+              <p className="text-sm text-gray-500">Money flow tracking</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6">
+              <div className="bg-green-50 p-4 rounded-xl border border-green-200">
                 <p className="text-sm text-green-700 font-medium mb-2">Money to Receive</p>
                 <p className="text-2xl font-bold text-green-900 mb-1">{formatCurrency(totalLentPending)}</p>
                 <div className="text-xs text-green-600 space-y-1">
@@ -663,7 +679,7 @@ export default function AnalyticsPage() {
                   <p>Paid: {formatCurrency(totalLentPaid)}</p>
                 </div>
               </div>
-              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+              <div className="bg-red-50 p-4 rounded-xl border border-red-200">
                 <p className="text-sm text-red-700 font-medium mb-2">Money to Pay</p>
                 <p className="text-2xl font-bold text-red-900 mb-1">{formatCurrency(totalBorrowedPending)}</p>
                 <div className="text-xs text-red-600 space-y-1">
@@ -674,7 +690,7 @@ export default function AnalyticsPage() {
             </div>
             {lendingStatusData.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Lending Status Distribution</h3>
+                <h3 className="text-lg font-bold mb-4 text-gray-900">Lending Status Distribution</h3>
                 <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                   <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
                     <ResponsiveContainer width="100%" height={280}>

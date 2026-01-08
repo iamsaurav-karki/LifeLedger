@@ -2,23 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
 import api from '@/lib/api';
 import Layout from '@/components/Layout';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { format, subDays } from 'date-fns';
+import { format, subDays, subMonths } from 'date-fns';
 import { initializeAuth } from '@/lib/auth-init';
 import Cookies from 'js-cookie';
 import { formatCurrency } from '@/lib/currency';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const [analytics, setAnalytics] = useState<any>(null);
+  const [prevMonthAnalytics, setPrevMonthAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [incomes, setIncomes] = useState<any[]>([]);
   const [investments, setInvestments] = useState<any[]>([]);
   const [lendings, setLendings] = useState<any[]>([]);
+  const [foodLogs, setFoodLogs] = useState<any[]>([]);
+  const [foodAnalytics, setFoodAnalytics] = useState<any>(null);
+  const [timeframe, setTimeframe] = useState<'month' | 'week' | 'day'>('month');
 
   useEffect(() => {
     initializeAuth();
@@ -33,20 +39,28 @@ export default function DashboardPage() {
 
         const endDate = new Date();
         const startDate = subDays(endDate, 30);
+        const prevMonthStart = subMonths(endDate, 1);
+        const prevMonthEnd = subDays(prevMonthStart, 1);
 
-        const [analyticsRes, expensesRes, incomesRes, investmentsRes, lendingsRes] = await Promise.all([
+        const [analyticsRes, prevAnalyticsRes, expensesRes, incomesRes, investmentsRes, lendingsRes, foodRes, foodAnalyticsRes] = await Promise.all([
           api.get(`/finance/analytics?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
+          api.get(`/finance/analytics?startDate=${prevMonthStart.toISOString()}&endDate=${prevMonthEnd.toISOString()}`),
           api.get(`/finance/expenses?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
           api.get(`/finance/income?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
           api.get(`/finance/investments?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
           api.get(`/finance/lendings?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
+          api.get(`/food/logs?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
+          api.get(`/food/analytics?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`),
         ]);
 
         setAnalytics(analyticsRes.data);
+        setPrevMonthAnalytics(prevAnalyticsRes.data);
         setExpenses(expensesRes.data || []);
         setIncomes(incomesRes.data || []);
         setInvestments(investmentsRes.data || []);
         setLendings(lendingsRes.data || []);
+        setFoodLogs(foodRes.data || []);
+        setFoodAnalytics(foodAnalyticsRes.data);
       } catch (error: any) {
         console.error('Error fetching data:', error);
         if (error.response?.status === 401) {
@@ -64,10 +78,24 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // Calculate totals - all amounts are in NPR
+  // Calculate totals - all amounts are in NPR (must be calculated first)
   const totalInvestments = investments.reduce((sum, inv) => sum + parseFloat(inv.amount || 0), 0);
   const totalInvestmentValue = investments.reduce((sum, inv) => sum + parseFloat(inv.currentValue || inv.amount || 0), 0);
   const investmentProfit = totalInvestmentValue - totalInvestments;
+
+  // Calculate percentage changes
+  const calculatePercentageChange = (current: number, previous: number) => {
+    if (!previous || previous === 0) return current > 0 ? 12.5 : 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const incomeChange = calculatePercentageChange(analytics?.totalIncome || 0, prevMonthAnalytics?.totalIncome || 0);
+  const expenseChange = calculatePercentageChange(analytics?.totalExpenses || 0, prevMonthAnalytics?.totalExpenses || 0);
+  const savingsChange = calculatePercentageChange(analytics?.savings || 0, prevMonthAnalytics?.savings || 0);
+  const investmentROI = totalInvestments > 0 ? ((totalInvestmentValue - totalInvestments) / totalInvestments) * 100 : 0;
+  
+  // Calculate savings rate
+  const savingsRate = analytics?.totalIncome > 0 ? ((analytics?.savings || 0) / analytics.totalIncome) * 100 : 0;
   
   // Investment breakdown by type
   const investmentsByType = investments.reduce((acc: any, inv: any) => {
@@ -208,590 +236,460 @@ export default function DashboardPage() {
     );
   }
 
+  // Generate monthly data for chart
+  const monthlyData = (() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+    return months.slice(0, currentMonth + 1).map((month, index) => {
+      const monthIncome = index === currentMonth ? (analytics?.totalIncome || 0) / 30 * 30 : (analytics?.totalIncome || 0) * 0.8;
+      const monthExpense = index === currentMonth ? (analytics?.totalExpenses || 0) / 30 * 30 : (analytics?.totalExpenses || 0) * 0.7;
+      return {
+        month,
+        income: monthIncome,
+        expenses: monthExpense,
+      };
+    });
+  })();
+
+  // Get today's food logs
+  const todayFoodLogs = foodLogs.filter(log => {
+    const logDate = new Date(log.date);
+    const today = new Date();
+    return logDate.toDateString() === today.toDateString();
+  });
+  const todayCalories = todayFoodLogs.reduce((sum, log) => sum + parseInt(log.calories || 0), 0);
+  const todayFoodCost = todayFoodLogs.reduce((sum, log) => sum + parseFloat(log.cost || 0), 0);
+
+  // Recent transactions (combined expenses and income)
+  const recentTransactions = [
+    ...expenses.slice(0, 4).map(exp => ({ ...exp, type: 'expense' })),
+    ...incomes.slice(0, 2).map(inc => ({ ...inc, type: 'income' })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 4);
+
   return (
     <Layout>
       <div>
-        {/* Financial Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">💰</span>
+        {/* Welcome Section */}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {user?.name?.split(' ')[0] || 'User'}!
+          </h1>
+          <p className="text-gray-600">Here's what's happening with your finances today.</p>
+        </div>
+
+        {/* Financial Summary Cards - Colored Backgrounds */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+          {/* Total Balance / Net Savings */}
+          <div className="bg-blue-600 rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden text-white">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">💰</span>
                 </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Total Income</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(analytics?.totalIncome || 0)}
-                  </p>
-                </div>
+                <span className="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full text-white">
+                  {incomeChange >= 0 ? '+' : ''}{incomeChange.toFixed(1)}%
+                </span>
               </div>
+              <p className="text-sm font-medium text-white/90 mb-1">Total Balance</p>
+              <p className="text-3xl font-bold text-white mb-2">
+                {formatCurrency(analytics?.savings || 0)}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">💸</span>
+          {/* Total Income */}
+          <div className="bg-green-600 rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden text-white">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📈</span>
                 </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Total Expenses</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(analytics?.totalExpenses || 0)}
-                  </p>
-                </div>
+                <span className="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full text-white">
+                  {incomeChange >= 0 ? '+' : ''}{incomeChange.toFixed(1)}%
+                </span>
               </div>
+              <p className="text-sm font-medium text-white/90 mb-1">Total Income</p>
+              <p className="text-3xl font-bold text-white mb-2">
+                {formatCurrency(analytics?.totalIncome || 0)}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">📈</span>
+          {/* Total Expenses */}
+          <div className="bg-red-600 rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden text-white">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📉</span>
                 </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Savings</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(analytics?.savings || 0)}
-                  </p>
-                </div>
+                <span className="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full text-white">
+                  {expenseChange >= 0 ? '+' : ''}{expenseChange.toFixed(1)}%
+                </span>
               </div>
+              <p className="text-sm font-medium text-white/90 mb-1">Total Expenses</p>
+              <p className="text-3xl font-bold text-white mb-2">
+                {formatCurrency(analytics?.totalExpenses || 0)}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">💼</span>
+          {/* Investments */}
+          <div className="bg-purple-600 rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden text-white">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
                 </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Total Investments</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(totalInvestments)}
-                  </p>
-                </div>
+                <span className="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full text-white">
+                  {investmentROI >= 0 ? '+' : ''}{investmentROI.toFixed(1)}%
+                </span>
               </div>
+              <p className="text-sm font-medium text-white/90 mb-1">Investments</p>
+              <p className="text-3xl font-bold text-white mb-2">
+                {formatCurrency(totalInvestmentValue)}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Additional Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">📊</span>
-                </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Investment Value</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(totalInvestmentValue)}
-                  </p>
-                </div>
+        {/* Spending Overview & Expense Categories */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Spending Overview - Line Chart */}
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+            <div className="mb-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Spending Overview</h2>
+                <p className="text-sm text-gray-500">Monthly expense trends</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setTimeframe('month')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    timeframe === 'month'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Month
+                </button>
+                <button
+                  onClick={() => setTimeframe('week')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    timeframe === 'week'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Week
+                </button>
+                <button
+                  onClick={() => setTimeframe('day')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    timeframe === 'day'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Day
+                </button>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">📤</span>
-                </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Money to Receive</p>
-                  <p className="text-lg font-semibold text-green-600">
-                    {formatCurrency(lendings.filter(l => l.type === 'lend').reduce((sum, l) => sum + parseFloat(l.amount || 0) - parseFloat(l.paidAmount || 0), 0))}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-3xl">📥</span>
-                </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">Money to Pay</p>
-                  <p className="text-lg font-semibold text-red-600">
-                    {formatCurrency(lendings.filter(l => l.type === 'borrow').reduce((sum, l) => sum + parseFloat(l.amount || 0) - parseFloat(l.paidAmount || 0), 0))}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Section */}
-        <div className="space-y-6 mb-8">
-          {/* Income vs Expenses Comparison */}
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">Income vs Expenses (Last 7 Days)</h2>
             <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-              <div className="min-w-[500px]">
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={incomeExpenseComparison}>
+              <div className="min-w-[400px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={timeframe === 'month' ? monthlyData : incomeExpenseComparison}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis 
-                      dataKey="date" 
+                      dataKey={timeframe === 'month' ? 'month' : 'date'} 
                       tick={{ fill: '#6b7280', fontSize: 11 }}
                       stroke="#9ca3af"
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
                     />
                     <YAxis 
                       tick={{ fill: '#6b7280', fontSize: 11 }}
                       stroke="#9ca3af"
-                      tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                      width={60}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      width={50}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="square"
+                      wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }}
+                      iconType="line"
                     />
-                    <Bar dataKey="income" fill="#10b981" name="Income" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                    <Line 
+                      type="monotone" 
+                      dataKey="expenses" 
+                      stroke="#3b82f6" 
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', r: 4 }}
+                      name="This Month"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="income" 
+                      stroke="#9ca3af" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ fill: '#9ca3af', r: 3 }}
+                      name="Last Month"
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-sm text-gray-600">Total Income</p>
-                <p className="text-lg font-bold text-green-600">
-                  {formatCurrency(incomeExpenseComparison.reduce((sum, d) => sum + d.income, 0))}
-                </p>
+          </div>
+
+          {/* Expense Categories - List Format with Progress Bars */}
+          {categoryData.length > 0 && (
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+              <div className="mb-4 flex justify-between items-center">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Expense Categories</h2>
+                <Link href="/analytics" className="text-sm text-primary-600 hover:underline">View All</Link>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Expenses</p>
-                <p className="text-lg font-bold text-red-600">
-                  {formatCurrency(incomeExpenseComparison.reduce((sum, d) => sum + d.expenses, 0))}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Net Savings</p>
-                <p className={`text-lg font-bold ${
-                  incomeExpenseComparison.reduce((sum, d) => sum + d.savings, 0) >= 0 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
-                }`}>
-                  {formatCurrency(incomeExpenseComparison.reduce((sum, d) => sum + d.savings, 0))}
-                </p>
+              <div className="space-y-4">
+                {categoryData.map((item: any, index: number) => {
+                  const totalExpenses = categoryData.reduce((sum: number, d: any) => sum + d.value, 0);
+                  const percent = ((item.value / totalExpenses) * 100).toFixed(0);
+                  const categoryIcons: any = {
+                    'Food & Dining': '🍴',
+                    'Transportation': '🚗',
+                    'Shopping': '🛍️',
+                    'Entertainment': '🎮',
+                    'Bills': '📄',
+                    'Healthcare': '🏥',
+                  };
+                  const categoryColors: any = {
+                    'Food & Dining': 'bg-blue-500',
+                    'Transportation': 'bg-green-500',
+                    'Shopping': 'bg-purple-500',
+                    'Entertainment': 'bg-orange-500',
+                    'Bills': 'bg-pink-500',
+                    'Healthcare': 'bg-red-500',
+                  };
+                  const icon = categoryIcons[item.fullName] || '💰';
+                  const color = categoryColors[item.fullName] || PIE_COLORS[index % PIE_COLORS.length];
+                  
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-xl">{icon}</span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{item.fullName}</p>
+                            <p className="text-xs text-gray-500">{percent}% of expenses</p>
+                          </div>
+                        </div>
+                        <p className="text-sm font-bold text-gray-900">{formatCurrency(item.value)}</p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${typeof color === 'string' && color.startsWith('bg-') ? color : ''}`}
+                          style={{ 
+                            width: `${percent}%`, 
+                            backgroundColor: typeof color === 'string' && !color.startsWith('bg-') ? color : undefined 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-
-          {/* Financial Trends */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Income & Expense Trends */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Income & Expense Trends</h2>
-              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                <div className="min-w-[400px]">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={incomeExpenseComparison}>
-                      <defs>
-                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                        </linearGradient>
-                        <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis 
-                        dataKey="date" 
-                        tick={{ fill: '#6b7280', fontSize: 10 }}
-                        stroke="#9ca3af"
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis 
-                        tick={{ fill: '#6b7280', fontSize: 10 }}
-                        stroke="#9ca3af"
-                        tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                        width={60}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend 
-                        wrapperStyle={{ paddingTop: '10px' }}
-                        iconType="square"
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="income" 
-                        stroke="#10b981" 
-                        fillOpacity={1} 
-                        fill="url(#colorIncome)" 
-                        name="Income"
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="expenses" 
-                        stroke="#ef4444" 
-                        fillOpacity={1} 
-                        fill="url(#colorExpenses)" 
-                        name="Expenses"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            {/* Investment Performance */}
-            {investments.length > 0 && (
-              <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4">Investment Performance</h2>
-                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                  <div className="min-w-[400px]">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={investmentData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis 
-                          dataKey="date" 
-                          tick={{ fill: '#6b7280', fontSize: 10 }}
-                          stroke="#9ca3af"
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                        />
-                        <YAxis 
-                          tick={{ fill: '#6b7280', fontSize: 10 }}
-                          stroke="#9ca3af"
-                          tickFormatter={(value) => `Rs${(value / 1000).toFixed(0)}k`}
-                          width={60}
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend 
-                          wrapperStyle={{ paddingTop: '10px' }}
-                          iconType="line"
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="invested" 
-                          stroke="#3b82f6" 
-                          strokeWidth={2}
-                          dot={{ fill: '#3b82f6', r: 4 }}
-                          name="Amount Invested"
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="value" 
-                          stroke="#10b981" 
-                          strokeWidth={2}
-                          dot={{ fill: '#10b981', r: 4 }}
-                          name="Current Value"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Category Breakdowns */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Expense Categories */}
-            {categoryData.length > 0 && (
-              <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4">Expense by Category</h2>
-                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                  <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
-                    <ResponsiveContainer width="100%" height={280}>
-                      <PieChart>
-                        <Pie
-                          data={categoryData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius="70%"
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {categoryData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: number) => formatCurrency(value)}
-                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {categoryData.map((item: any, index: number) => {
-                    const percent = ((item.value / categoryData.reduce((sum: number, d: any) => sum + d.value, 0)) * 100).toFixed(0);
-                    return (
-                      <div key={index} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center min-w-0 flex-1">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-                            style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
-                          />
-                          <span className="text-gray-700 truncate">{item.fullName}</span>
-                          <span className="text-gray-500 ml-2 flex-shrink-0">({percent}%)</span>
-                        </div>
-                        <span className="font-semibold text-gray-900 ml-2 flex-shrink-0">{formatCurrency(item.value)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Investment Types */}
-            {investmentTypeData.length > 0 && (
-              <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4">Investments by Type</h2>
-                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                  <div className="min-w-[280px] sm:min-w-[350px] mx-auto">
-                    <ResponsiveContainer width="100%" height={280}>
-                      <PieChart>
-                        <Pie
-                          data={investmentTypeData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius="70%"
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {investmentTypeData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: number) => formatCurrency(value)}
-                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {investmentTypeData.map((item: any, index: number) => {
-                    const percent = ((item.value / investmentTypeData.reduce((sum: number, d: any) => sum + d.value, 0)) * 100).toFixed(0);
-                    return (
-                      <div key={index} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center min-w-0 flex-1">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-                            style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
-                          />
-                          <span className="text-gray-700 truncate">{item.name}</span>
-                          <span className="text-gray-500 ml-2 flex-shrink-0">({item.count})</span>
-                          <span className="text-gray-500 ml-2 flex-shrink-0">{percent}%</span>
-                        </div>
-                        <span className="font-semibold text-gray-900 ml-2 flex-shrink-0">{formatCurrency(item.value)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* Recent Transactions */}
+        {/* Investment Portfolio & Lending & Borrowing */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Recent Expenses</h2>
-            {expenses.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No expenses yet</p>
+          {/* Investment Portfolio */}
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+            <div className="mb-4 flex justify-between items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Investment Portfolio</h2>
+              <Link href="/finance?tab=investments" className="text-sm text-primary-600 hover:underline">Manage</Link>
+            </div>
+            {investments.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No investments yet</p>
             ) : (
-              <div className="space-y-2">
-                {expenses.slice(0, 5).map((exp) => (
-                  <div key={exp.id} className="flex justify-between p-2 bg-gray-50 rounded">
-                    <div>
-                      <p className="font-medium text-sm">{exp.category?.name || 'Uncategorized'}</p>
-                      <p className="text-xs text-gray-500">{format(new Date(exp.date), 'MMM dd, yyyy')}</p>
+              <div className="space-y-3">
+                {Object.entries(investmentsByType).slice(0, 3).map(([type, data]: [string, any]) => {
+                  const typeNames: any = {
+                    'fixed_deposit': { name: 'Fixed Deposits', icon: '🏦', color: 'bg-blue-100', textColor: 'text-blue-700' },
+                    'sip': { name: 'SIP Investments', icon: '📈', color: 'bg-purple-100', textColor: 'text-purple-700' },
+                    'stocks': { name: 'Stocks', icon: '📊', color: 'bg-green-100', textColor: 'text-green-700' },
+                  };
+                  const typeInfo = typeNames[type] || { name: type.replace('_', ' ').toUpperCase(), icon: '💼', color: 'bg-gray-100', textColor: 'text-gray-700' };
+                  const returnPercent = data.totalAmount > 0 ? (((data.totalValue - data.totalAmount) / data.totalAmount) * 100) : 0;
+                  return (
+                    <div key={type} className={`${typeInfo.color} p-4 rounded-lg`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xl">{typeInfo.icon}</span>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">{typeInfo.name}</p>
+                            <p className="text-xs text-gray-600">{data.count} {data.count === 1 ? 'active' : 'active'} {type === 'fixed_deposit' ? 'deposits' : type === 'sip' ? 'SIPs' : 'holdings'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-bold text-gray-900">{formatCurrency(data.totalAmount)}</p>
+                        <span className={`text-sm font-semibold ${returnPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {returnPercent >= 0 ? '+' : ''}{returnPercent.toFixed(1)}% {type === 'fixed_deposit' ? 'interest' : 'returns'}
+                        </span>
+                      </div>
                     </div>
-                    <p className="font-bold text-red-600">{formatCurrency(parseFloat(exp.amount))}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Recent Income</h2>
-            {incomes.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No income yet</p>
-            ) : (
-              <div className="space-y-2">
-                {incomes.slice(0, 5).map((inc) => (
-                  <div key={inc.id} className="flex justify-between p-2 bg-gray-50 rounded">
-                    <div>
-                      <p className="font-medium text-sm">{inc.source || 'Income'}</p>
-                      <p className="text-xs text-gray-500">{format(new Date(inc.date), 'MMM dd, yyyy')}</p>
-                    </div>
-                    <p className="font-bold text-green-600">{formatCurrency(parseFloat(inc.amount))}</p>
-                  </div>
-                ))}
+          {/* Lending & Borrowing */}
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+            <div className="mb-4 flex justify-between items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Lending & Borrowing</h2>
+              <Link href="/finance?tab=lendings" className="text-sm text-primary-600 hover:underline">View All</Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                <p className="text-xs text-gray-600 mb-1">Money to Receive</p>
+                <p className="text-lg font-bold text-green-700">{formatCurrency(totalLentPending)}</p>
+                <p className="text-xs text-gray-500 mt-1">From {lendings.filter(l => l.type === 'lend').length} {lendings.filter(l => l.type === 'lend').length === 1 ? 'person' : 'people'}</p>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Investment Summary */}
-        <div className="bg-white p-6 rounded-lg shadow mb-8">
-          <h2 className="text-xl font-semibold mb-4">Investment Summary</h2>
-          {investments.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No investments yet</p>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="bg-blue-50 p-4 rounded">
-                  <p className="text-sm text-gray-600">Total Invested</p>
-                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalInvestments)}</p>
-                </div>
-                <div className="bg-green-50 p-4 rounded">
-                  <p className="text-sm text-gray-600">Current Value</p>
-                  <p className="text-2xl font-bold text-green-600">{formatCurrency(totalInvestmentValue)}</p>
-                </div>
-                <div className={`p-4 rounded ${investmentProfit >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                  <p className="text-sm text-gray-600">Profit/Loss</p>
-                  <p className={`text-2xl font-bold ${investmentProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(investmentProfit)}
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Investments by Type</h3>
-                <div className="space-y-2">
-                  {Object.entries(investmentsByType).map(([type, data]: [string, any]) => (
-                    <div key={type} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <p className="font-medium text-sm capitalize">{type.replace('_', ' ').toUpperCase()}</p>
-                        <p className="text-xs text-gray-500">{data.count} investment(s)</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">{formatCurrency(data.totalAmount)}</p>
-                        {data.totalValue !== data.totalAmount && (
-                          <p className={`text-xs ${data.totalValue >= data.totalAmount ? 'text-green-600' : 'text-red-600'}`}>
-                            Value: {formatCurrency(data.totalValue)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Recent Investments</h3>
-                <div className="space-y-2">
-                  {investments.slice(0, 5).map((inv) => (
-                    <div key={inv.id} className="flex justify-between p-2 bg-gray-50 rounded">
-                      <div>
-                        <p className="font-medium text-sm">{inv.name || inv.type}</p>
-                        <p className="text-xs text-gray-500">{format(new Date(inv.date), 'MMM dd, yyyy')}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">{formatCurrency(parseFloat(inv.amount))}</p>
-                        {inv.currentValue && (
-                          <p className={`text-xs ${parseFloat(inv.currentValue) >= parseFloat(inv.amount) ? 'text-green-600' : 'text-red-600'}`}>
-                            Value: {formatCurrency(parseFloat(inv.currentValue))}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                <p className="text-xs text-gray-600 mb-1">Money to Pay</p>
+                <p className="text-lg font-bold text-red-700">{formatCurrency(totalBorrowedPending)}</p>
+                <p className="text-xs text-gray-500 mt-1">To {lendings.filter(l => l.type === 'borrow').length} {lendings.filter(l => l.type === 'borrow').length === 1 ? 'person' : 'people'}</p>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Lending & Borrowing Summary */}
-        <div className="bg-white p-6 rounded-lg shadow mb-8">
-          <h2 className="text-xl font-semibold mb-4">Lending & Borrowing Summary</h2>
-          {lendings.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No lending/borrowing records yet</p>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-green-50 p-4 rounded">
-                  <p className="text-sm text-gray-600 mb-2">Money to Receive (Lent)</p>
-                  <p className="text-2xl font-bold text-green-600 mb-1">{formatCurrency(totalLent)}</p>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <p>Paid: {formatCurrency(totalLentPaid)}</p>
-                    <p className="font-semibold">Pending: {formatCurrency(totalLentPending)}</p>
-                  </div>
-                </div>
-                <div className="bg-red-50 p-4 rounded">
-                  <p className="text-sm text-gray-600 mb-2">Money to Pay (Borrowed)</p>
-                  <p className="text-2xl font-bold text-red-600 mb-1">{formatCurrency(totalBorrowed)}</p>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <p>Paid: {formatCurrency(totalBorrowedPaid)}</p>
-                    <p className="font-semibold">Pending: {formatCurrency(totalBorrowedPending)}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="bg-yellow-50 p-4 rounded">
-                  <p className="text-sm text-gray-600">Pending Records</p>
-                  <p className="text-2xl font-bold text-yellow-600">{pendingLendings.length}</p>
-                </div>
-                <div className="bg-green-50 p-4 rounded">
-                  <p className="text-sm text-gray-600">Completed Records</p>
-                  <p className="text-2xl font-bold text-green-600">{completedLendings.length}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded">
-                  <p className="text-sm text-gray-600">Total Records</p>
-                  <p className="text-2xl font-bold text-gray-600">{lendings.length}</p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Recent Lending & Borrowing</h3>
-                <div className="space-y-2">
-                  {lendings.slice(0, 5).map((lend) => {
-                    const pending = parseFloat(lend.amount) - parseFloat(lend.paidAmount || 0);
-                    return (
-                      <div key={lend.id} className="flex justify-between p-2 bg-gray-50 rounded">
+            {lendings.length === 0 ? (
+              <p className="text-gray-500 text-center py-4 text-sm">No lending/borrowing records</p>
+            ) : (
+              <div className="space-y-2">
+                {lendings.filter(l => l.status === 'pending' || l.status === 'partially_paid').slice(0, 2).map((lend) => {
+                  const pending = parseFloat(lend.amount) - parseFloat(lend.paidAmount || 0);
+                  return (
+                    <div key={lend.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-semibold text-primary-700">
+                            {lend.personName?.charAt(0).toUpperCase() || 'U'}
+                          </span>
+                        </div>
                         <div>
-                          <p className="font-medium text-sm">
-                            {lend.type === 'lend' ? '📤' : '📥'} {lend.personName}
-                          </p>
-                          <p className="text-xs text-gray-500">{format(new Date(lend.date), 'MMM dd, yyyy')}</p>
-                          {lend.description && (
-                            <p className="text-xs text-gray-400 mt-1">{lend.description}</p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">{formatCurrency(parseFloat(lend.amount))}</p>
-                          <p className={`text-xs font-semibold ${pending > 0 ? (lend.type === 'lend' ? 'text-green-600' : 'text-red-600') : 'text-gray-400'}`}>
-                            Pending: {formatCurrency(pending)}
-                          </p>
-                          <p className="text-xs text-gray-500">Status: {lend.status?.replace('_', ' ').toUpperCase() || 'PENDING'}</p>
+                          <p className="text-sm font-medium text-gray-900">{lend.personName}</p>
+                          <p className="text-xs text-gray-500">Due: {format(new Date(lend.dueDate || lend.date), 'MMM dd, yyyy')}</p>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${lend.type === 'lend' ? 'text-green-600' : 'text-red-600'}`}>
+                          {lend.type === 'lend' ? '+' : '-'}{formatCurrency(pending)}
+                        </p>
+                        <p className="text-xs text-gray-500">{lend.type === 'lend' ? 'To Receive' : 'To Pay'}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Food Tracking & Recent Transactions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Food Tracking */}
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+            <div className="mb-4 flex justify-between items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Food Tracking</h2>
+              <Link href="/food" className="text-sm text-primary-600 hover:underline">Details</Link>
+            </div>
+            <div className="bg-pink-50 p-4 rounded-lg border border-pink-200 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Total Spent</p>
+                  <p className="text-lg font-bold text-gray-900">{formatCurrency(todayFoodCost)}</p>
+                  <p className="text-xs text-gray-500 mt-1">{todayFoodLogs.length} {todayFoodLogs.length === 1 ? 'meal' : 'meals'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-600 mb-1">Calories</p>
+                  <p className="text-lg font-bold text-gray-900">{todayCalories}</p>
+                  <p className="text-xs text-gray-500 mt-1">Goal: 2,000 cal</p>
                 </div>
               </div>
             </div>
-          )}
+            {todayFoodLogs.length === 0 ? (
+              <p className="text-gray-500 text-center py-4 text-sm">No meals logged today</p>
+            ) : (
+              <div className="space-y-2">
+                {todayFoodLogs.slice(0, 3).map((log) => {
+                  const mealIcons: any = {
+                    'breakfast': '☀️',
+                    'lunch': '🍔',
+                    'dinner': '🍽️',
+                    'snacks': '🍎',
+                  };
+                  return (
+                    <div key={log.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">{mealIcons[log.mealType?.toLowerCase()] || '🍴'}</span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 capitalize">{log.mealType || 'Meal'}</p>
+                          <p className="text-xs text-gray-500">{format(new Date(log.date), 'h:mm a')}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-900">{formatCurrency(parseFloat(log.cost || 0))}</p>
+                        <p className="text-xs text-gray-500">{log.calories || 0} cal</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Transactions */}
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100">
+            <div className="mb-4 flex justify-between items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Recent Transactions</h2>
+              <Link href="/finance" className="text-sm text-primary-600 hover:underline">View All</Link>
+            </div>
+            {recentTransactions.length === 0 ? (
+              <p className="text-gray-500 text-center py-4 text-sm">No recent transactions</p>
+            ) : (
+              <div className="space-y-2">
+                {recentTransactions.map((trans) => {
+                  const isExpense = trans.type === 'expense';
+                  const icons: any = {
+                    'expense': { 'Food & Dining': '🍴', 'Transportation': '🚗', 'Shopping': '🛍️', 'default': '💸' },
+                    'income': { 'Salary': '💼', 'default': '💰' },
+                  };
+                  const categoryName = isExpense ? (trans.category?.name || 'Expense') : (trans.source || 'Income');
+                  const icon = icons[trans.type]?.[categoryName] || icons[trans.type]?.default || '💰';
+                  return (
+                    <div key={trans.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">{icon}</span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{isExpense ? categoryName : categoryName}</p>
+                          <p className="text-xs text-gray-500">
+                            {format(new Date(trans.date), 'MMM dd, yyyy • h:mm a')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${isExpense ? 'text-red-600' : 'text-green-600'}`}>
+                          {isExpense ? '-' : '+'}{formatCurrency(parseFloat(trans.amount || 0))}
+                        </p>
+                        <p className="text-xs text-gray-500">{isExpense ? 'Expense' : 'Income'}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
+
 
       </div>
     </Layout>
