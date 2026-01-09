@@ -15,8 +15,13 @@ export default function Layout({ children }: LayoutProps) {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const updateUser = useAuthStore((state) => state.updateUser);
   const isAdmin = useAuthStore((state) => state.isAdmin());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
 
   const navLinks = useMemo(
     () =>
@@ -56,6 +61,37 @@ export default function Layout({ children }: LayoutProps) {
       return pathname === href || pathname === '/';
     }
     return pathname?.startsWith(href);
+  };
+
+  const handleEditName = () => {
+    if (user) {
+      setEditName(user.name || '');
+      setEditModalOpen(true);
+      setEditError('');
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!editName.trim()) {
+      setEditError('Name cannot be empty');
+      return;
+    }
+    if (editName.trim().length < 2) {
+      setEditError('Name must be at least 2 characters long');
+      return;
+    }
+
+    setEditLoading(true);
+    setEditError('');
+    try {
+      const response = await api.patch('/users/me', { name: editName.trim() });
+      updateUser({ name: response.data.name });
+      setEditModalOpen(false);
+    } catch (error: any) {
+      setEditError(error.response?.data?.message || 'Failed to update name');
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   return (
@@ -123,7 +159,13 @@ export default function Layout({ children }: LayoutProps) {
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>
+                <button
+                  onClick={handleEditName}
+                  className="text-sm font-medium text-gray-900 truncate hover:text-primary-600 transition-colors w-full text-left"
+                  title="Click to edit name"
+                >
+                  {user?.name || 'User'}
+                </button>
                 <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
               </div>
             </div>
@@ -171,7 +213,13 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center space-x-3">
               <div className="hidden sm:flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                  <button
+                    onClick={handleEditName}
+                    className="text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors"
+                    title="Click to edit name"
+                  >
+                    {user?.name || 'User'}
+                  </button>
                   <p className="text-xs text-gray-500">{isAdmin ? 'Admin' : 'User'}</p>
                 </div>
                 <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
@@ -191,6 +239,60 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </main>
       </div>
+
+      {/* Edit Name Modal */}
+      {editModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Your Name</h3>
+            {editError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-700">{editError}</p>
+              </div>
+            )}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name
+              </label>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 bg-white"
+                placeholder="Enter your name"
+                maxLength={100}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveName();
+                  } else if (e.key === 'Escape') {
+                    setEditModalOpen(false);
+                  }
+                }}
+              />
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setEditModalOpen(false);
+                  setEditError('');
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                disabled={editLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveName}
+                disabled={editLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors disabled:opacity-50"
+              >
+                {editLoading ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

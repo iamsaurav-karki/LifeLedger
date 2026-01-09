@@ -164,15 +164,18 @@ export default function FinancePage() {
   });
 
   useEffect(() => {
-    initializeAuth();
-    setTimeout(() => {
+    const init = async () => {
+      await initializeAuth();
+      setTimeout(() => {
       const token = useAuthStore.getState().accessToken || Cookies.get('accessToken');
       if (!token) {
         router.push('/login');
         return;
       }
       fetchData();
-    }, 100);
+      }, 100);
+    };
+    init();
   }, [router, filterPeriod, customStartDate, customEndDate]);
 
   const getDateRange = () => {
@@ -1898,7 +1901,7 @@ export default function FinancePage() {
                         <td className="px-4 py-3 text-sm text-gray-500">
                           {investment.description || '-'}
                         </td>
-                        <td className="px-4 py-3 text-sm font-bold text-right">
+                        <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right">
                           {formatCurrency(parseFloat(investment.amount))}
                         </td>
                         <td className="px-4 py-3 text-sm text-right">

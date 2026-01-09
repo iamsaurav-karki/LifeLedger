@@ -16,8 +16,9 @@ export default function AdminDashboardPage() {
     // Set page title
     document.title = 'Admin Dashboard - LifeLedger';
     
-    initializeAuth();
-    setTimeout(() => {
+    const init = async () => {
+      await initializeAuth();
+      setTimeout(() => {
       const isAuthenticated = useAuthStore.getState().isAuthenticated();
       const isAdmin = useAuthStore.getState().isAdmin();
       
@@ -38,7 +39,9 @@ export default function AdminDashboardPage() {
       };
 
       fetchData();
-    }, 100);
+      }, 100);
+    };
+    init();
   }, [router]);
 
   if (loading) {

@@ -27,7 +27,10 @@ export default function DashboardPage() {
   const [timeframe, setTimeframe] = useState<'month' | 'week' | 'day'>('month');
 
   useEffect(() => {
-    initializeAuth();
+    const init = async () => {
+      await initializeAuth();
+    };
+    init();
     
     const fetchData = async () => {
       try {

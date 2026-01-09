@@ -54,8 +54,9 @@ export default function AdminUsersPage() {
     // Set page title
     document.title = 'User Management - LifeLedger';
     
-    initializeAuth();
-    setTimeout(() => {
+    const init = async () => {
+      await initializeAuth();
+      setTimeout(() => {
       const isAuthenticated = useAuthStore.getState().isAuthenticated();
       const isAdmin = useAuthStore.getState().isAdmin();
       
@@ -65,7 +66,9 @@ export default function AdminUsersPage() {
       }
 
       fetchUsers();
-    }, 100);
+      }, 100);
+    };
+    init();
   }, [router, search, statusFilter]);
 
   const fetchUsers = async () => {

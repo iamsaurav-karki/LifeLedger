@@ -13,6 +13,7 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  updateUser: (userData: Partial<User>) => void;
   logout: () => void;
   isAuthenticated: () => boolean;
   isAdmin: () => boolean;
@@ -26,6 +27,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     Cookies.set('accessToken', accessToken);
     Cookies.set('refreshToken', refreshToken);
     set({ user, accessToken, refreshToken });
+  },
+  updateUser: (userData) => {
+    const currentUser = get().user;
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...userData };
+      set({ user: updatedUser });
+    }
   },
   logout: () => {
     Cookies.remove('accessToken');

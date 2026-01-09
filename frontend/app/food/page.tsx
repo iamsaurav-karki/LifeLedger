@@ -71,15 +71,18 @@ export default function FoodPage() {
   });
 
   useEffect(() => {
-    initializeAuth();
-    setTimeout(() => {
+    const init = async () => {
+      await initializeAuth();
+      setTimeout(() => {
       const token = useAuthStore.getState().accessToken || Cookies.get('accessToken');
       if (!token) {
         router.push('/login');
         return;
       }
       fetchData();
-    }, 100);
+      }, 100);
+    };
+    init();
   }, [router, filterPeriod, customStartDate, customEndDate]);
 
   const getDateRange = () => {

@@ -28,15 +28,18 @@ export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<'week' | 'month' | '3months' | 'year'>('month');
 
   useEffect(() => {
-    initializeAuth();
-    setTimeout(() => {
+    const init = async () => {
+      await initializeAuth();
+      setTimeout(() => {
       const token = useAuthStore.getState().accessToken || Cookies.get('accessToken');
       if (!token) {
         router.push('/login');
         return;
       }
       fetchData();
-    }, 100);
+      }, 100);
+    };
+    init();
   }, [router, dateRange]);
 
   const getDateRange = () => {

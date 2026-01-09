@@ -40,8 +40,9 @@ export default function AdminSettingsPage() {
     // Set page title
     document.title = 'System Settings - LifeLedger';
     
-    initializeAuth();
-    setTimeout(() => {
+    const init = async () => {
+      await initializeAuth();
+      setTimeout(() => {
       const isAuthenticated = useAuthStore.getState().isAuthenticated();
       const isAdmin = useAuthStore.getState().isAdmin();
       
@@ -50,9 +51,11 @@ export default function AdminSettingsPage() {
         return;
       }
 
-      fetchSettings();
-      fetchUsers();
-    }, 100);
+        fetchSettings();
+        fetchUsers();
+      }, 100);
+    };
+    init();
   }, [router]);
 
   const fetchSettings = async () => {
