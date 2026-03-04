@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lifeledger-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - web
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lifeledger-redis
+    networks:
+      - web
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: lifeledger-backend
+    env_file:
+      - .env
+    networks:
+      - web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-7001}:7001"
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: lifeledger-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: ${FRONTEND_URL}/api
+    networks:
+      - web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+       - "127.0.0.1:${FRONTEND_PORT:-7000}:7000"
+volumes:
+  postgres_data:
+
+networks:
+  web:
+    external: true
+
